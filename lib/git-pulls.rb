@@ -178,28 +178,56 @@ Usage: git pulls update
 
     puts state.capitalize + " Pull Requests for #{@user}/#{@repo}"
     pulls = state == 'open' ? get_open_pull_info : get_closed_pull_info
-    
+
+    # Settings & sizes
+    col_separator = ' | '
+    nr_size       = 4
+    date_size     = 5
+    title_size    = pulls.collect{ |p| p[:title].size }.max
+    label_size    = pulls.collect{ |p| p[:head].to_hash[:label].size }.max
+    ref_size      = pulls.collect{ |p| p[:head].to_hash[:ref].size }.max
+    assignee_size = pulls.collect{ |p| p[:assignee] ? p[:assignee].to_hash[:login].size : 0}.max
+
+    header = []
+    header << l('NR.', nr_size)
+    header << l('DATE', date_size)
+    header << l('ASSIGNEE', assignee_size)
+    header << l('TITLE', title_size)
+    header << l('REF', ref_size)
+    puts header.join col_separator
+
     if (state == 'closed')
        pulls.sort! { |a, b| b[:closed_at] <=> a[:closed_at] }
     end
-    
+
     pulls.reverse! if option == '--reverse'
 
     pulls.each do |pull|
-      pull = pull.to_hash
-      head = pull[:head].to_hash
+      pull     = pull.to_hash
+      head     = pull[:head].to_hash
+      assignee = pull[:assignee] ? pull[:assignee].to_hash[:login] : '–'
 
       line = []
-      line << l(pull[:number], 4)
-      line << l(Date.parse(pull[:created_at].to_s).strftime("%m/%d"), 5)
-      line << l(pull[:title], 35)
-      line << l(head[:label], 50)
+      line << l(pull[:number], nr_size)
+      line << l(Date.parse(pull[:created_at].to_s).strftime("%m/%d"), date_size)
+      line << l(assignee, assignee_size)
+      line << l(pull[:title], title_size)
+      if use_full_label?
+        line << l(head[:label], label_size)
+      else
+        line << l(head[:ref], ref_size)
+      end
 
-      puts line.join ' '
+      puts line.join col_separator
     end
     if pulls.count == 0
       puts ' -- no ' + state + ' pull requests --'
     end
+  end
+
+  # TODO Add option to make dynamic
+  def use_full_label?
+    false
   end
 
   def checkout
