@@ -180,6 +180,7 @@ Usage: git pulls update
 
     puts state.capitalize + " Pull Requests for #{@user}/#{@repo}"
     pulls = state == 'open' ? get_open_pull_info : get_closed_pull_info
+    issues = get_issues_info
 
     # Settings & sizes
     col_separator = ' | '
@@ -196,6 +197,7 @@ Usage: git pulls update
     header << l('ASSIGNEE', assignee_size)
     header << l('TITLE', title_size)
     header << l('REF', ref_size)
+    header << l('LABELS', 7)
     puts header.join col_separator
 
     if (state == 'closed')
@@ -206,11 +208,14 @@ Usage: git pulls update
 
     pulls.each do |pull|
       pull     = pull.to_hash
+      number   = pull[:number]
       head     = pull[:head].to_hash
       assignee = pull[:assignee] ? pull[:assignee].to_hash[:login] : '–'
+      issue    = issues.select{|i| i[:number] == number}.first
+      labels   = (issue ? issue[:labels].map{|l| l.to_hash[:name]} : []).join(", ")
 
       line = []
-      line << l(pull[:number], nr_size)
+      line << l(number, nr_size)
       line << l(Date.parse(pull[:created_at].to_s).strftime("%m/%d"), date_size)
       line << l(assignee, assignee_size)
       line << l(pull[:title], title_size)
@@ -219,6 +224,7 @@ Usage: git pulls update
       else
         line << l(head[:ref], ref_size)
       end
+      line << l(labels, labels.size)
 
       puts line.join col_separator
     end
@@ -368,6 +374,10 @@ Usage: git pulls update
     get_data(PULLS_CACHE_FILE)['open'].map(&:to_hash)
   end
 
+  def get_issues_info
+    get_data(PULLS_CACHE_FILE)['issues'].map(&:to_hash)
+  end
+
   def get_data(file)
     ::Psych.load_file(file)
   end
@@ -375,7 +385,8 @@ Usage: git pulls update
   def cache_pull_info
     response_o = Octokit.pull_requests("#{@user}/#{@repo}", 'open')
     response_c = Octokit.pull_requests("#{@user}/#{@repo}", 'closed')
-    save_data({'open' => response_o, 'closed' => response_c}, PULLS_CACHE_FILE)
+    response_i = Octokit.list_issues("#{@user}/#{@repo}")
+    save_data({'open' => response_o, 'closed' => response_c, 'issues' => response_i}, PULLS_CACHE_FILE)
   end
 
   def save_data(data, file)
