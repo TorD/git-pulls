@@ -125,7 +125,8 @@ Usage: git pulls update
         comments = (i_comments | p_comments | c_comments).sort_by {|i| i[:created_at]}
       end
       puts "Number   : #{pull[:number]}"
-      puts "Label    : #{head[:label]}"
+      puts "Branch   : #{head[:label]}"
+      puts "Labels   : #{get_labels_for_issue_nr(pull[:number]).join(", ")}"
       puts "Creator  : #{user[:login]}"
       puts "Created  : #{pull[:created_at]}"
       puts "Assignee : #{assignee}"
