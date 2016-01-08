@@ -185,7 +185,6 @@ Usage: git pulls update
     # Settings & sizes
     col_separator = ' | '
     nr_size       = 4
-    date_size     = 5
     title_size    = pulls.collect{ |p| p[:title].size }.max
     label_size    = pulls.collect{ |p| p[:head].to_hash[:label].size }.max
     ref_size      = pulls.collect{ |p| p[:head].to_hash[:ref].size }.max
@@ -193,7 +192,6 @@ Usage: git pulls update
 
     header = []
     header << l('NR.', nr_size)
-    header << l('DATE', date_size)
     header << l('ASSIGNEE', assignee_size)
     header << l('TITLE', title_size)
     header << l('REF', ref_size)
@@ -216,7 +214,6 @@ Usage: git pulls update
 
       line = []
       line << l(number, nr_size)
-      line << l(Date.parse(pull[:created_at].to_s).strftime("%m/%d"), date_size)
       line << l(assignee, assignee_size)
       line << l(pull[:title], title_size)
       if use_full_label?
