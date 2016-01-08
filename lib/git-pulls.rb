@@ -115,7 +115,7 @@ Usage: git pulls update
       head = pull[:head].to_hash
       repo = head[:repo].to_hash
       user = pull[:user].to_hash
-      assignee = pull[:assignee] ? pull[:assignee].to_hash : "–"
+      assignee = pull[:assignee] ? pull[:assignee].to_hash[:login] : "–"
 
       comments = []
       if optiona == '--comments' || optionb == '--comments'
@@ -128,7 +128,7 @@ Usage: git pulls update
       puts "Label    : #{head[:label]}"
       puts "Creator  : #{user[:login]}"
       puts "Created  : #{pull[:created_at]}"
-      puts "Assignee : #{assignee[:login]}"
+      puts "Assignee : #{assignee}"
       puts
       puts "Title    : #{pull[:title]}"
       puts
