@@ -209,8 +209,7 @@ Usage: git pulls update
       number   = pull[:number]
       head     = pull[:head].to_hash
       assignee = pull[:assignee] ? pull[:assignee].to_hash[:login] : '–'
-      issue    = issues.select{|i| i[:number] == number}.first
-      labels   = (issue ? issue[:labels].map{|l| l.to_hash[:name]} : []).join(", ")
+      labels   = get_labels_for_issue_nr(number, issues).join(", ")
 
       line = []
       line << l(number, nr_size)
@@ -373,6 +372,14 @@ Usage: git pulls update
 
   def get_issues_info
     get_data(PULLS_CACHE_FILE)['issues'].map(&:to_hash)
+  end
+
+  # Can pass issues instance if accessing multiple times conesecutively
+  def get_labels_for_issue_nr(number, issues=nil)
+    issues ||= get_issues_info
+    issue    = issues.select{|i| i[:number] == number}.first
+    labels   = (issue ? issue[:labels].map{|l| l.to_hash[:name]} : [])
+    return labels
   end
 
   def get_data(file)
